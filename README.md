@@ -1,13 +1,3 @@
----
-title: Orbitalis API
-emoji: 🛰️
-colorFrom: blue
-colorTo: purple
-sdk: docker
-app_port: 8080
-pinned: false
----
-
 # Orbitalis_backend
 
 Python backend for ORBITALIS, a tool for exploring NASA SPHEREx observations through time-lapse visualization.
