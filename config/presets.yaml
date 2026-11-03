@@ -1,0 +1,5 @@
+# Curated demo fields (SDD §5.1, §6.7).
+# Populated by the team; each preset also gets an entry in demo_bundle/.
+# Schema is a scaffold placeholder and may change until G1.
+
+presets: []

@@ -1,0 +1,131 @@
+[project]
+name = "orbitalis"
+version = "0.1.0"
+description = "ORBITALIS backend — explore NASA SPHEREx observations through time-lapse visualisation."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic>=2",
+  "pydantic-settings",
+  "httpx",
+  "sse-starlette",
+  "aiosqlite",
+  "orjson",
+  "PyYAML",
+  "numpy",
+  "scipy",
+  "astropy",
+  "reproject",
+  "photutils",
+  "Pillow",
+  "onnxruntime",
+  "scikit-learn",
+  # LLM provider SDK is added here once D-13 is decided
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "respx",
+  "ruff",
+  "import-linter",
+]
+ml = [
+  "torch",        # CPU build; training only
+  "onnx",         # export to models/candidate_cnn.onnx
+  "matplotlib",
+  "jupyter",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orbitalis", "src/orbitalis_core"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "D100", "D104"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+# Boundary contracts (SDD §5.3). Syntax verified per D-08 before relying on CI.
+[tool.importlinter]
+root_packages = ["orbitalis", "orbitalis_core"]
+
+[[tool.importlinter.contracts]]
+name = "orbitalis_core is pure"
+type = "forbidden"
+source_modules = ["orbitalis_core"]
+forbidden_modules = ["orbitalis"]
+
+[[tool.importlinter.contracts]]
+name = "gateway is a leaf"
+type = "forbidden"
+source_modules = ["orbitalis.gateway"]
+forbidden_modules = [
+  "orbitalis.store",
+  "orbitalis.pipeline",
+  "orbitalis.api",
+  "orbitalis.research",
+  "orbitalis.assistant",
+]
+
+[[tool.importlinter.contracts]]
+name = "store is a leaf"
+type = "forbidden"
+source_modules = ["orbitalis.store"]
+forbidden_modules = ["orbitalis.gateway", "orbitalis.pipeline", "orbitalis.api"]
+
+[[tool.importlinter.contracts]]
+name = "api never calls gateway directly"
+type = "forbidden"
+source_modules = ["orbitalis.api"]
+forbidden_modules = ["orbitalis.gateway"]
+
+[[tool.importlinter.contracts]]
+name = "jobs knows no science"
+type = "forbidden"
+source_modules = ["orbitalis.jobs"]
+forbidden_modules = [
+  "orbitalis.research",
+  "orbitalis.assistant",
+  "orbitalis.gateway",
+  "orbitalis.pipeline",
+  "orbitalis.api",
+]
+
+[[tool.importlinter.contracts]]
+name = "research boundaries"
+type = "forbidden"
+source_modules = ["orbitalis.research"]
+forbidden_modules = ["orbitalis.gateway", "orbitalis.api", "orbitalis.assistant"]
+
+[[tool.importlinter.contracts]]
+name = "assistant boundaries"
+type = "forbidden"
+source_modules = ["orbitalis.assistant"]
+forbidden_modules = ["orbitalis.gateway", "orbitalis.pipeline", "orbitalis.research"]
+
+[[tool.importlinter.contracts]]
+name = "eventbus knows no application"
+type = "forbidden"
+source_modules = ["orbitalis.eventbus"]
+forbidden_modules = [
+  "orbitalis.api",
+  "orbitalis.gateway",
+  "orbitalis.pipeline",
+  "orbitalis.jobs",
+  "orbitalis.research",
+  "orbitalis.assistant",
+  "orbitalis.store",
+]

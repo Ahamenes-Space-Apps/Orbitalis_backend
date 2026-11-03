@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ORBITALIS runtime data
+.data/
+.ruff_cache/

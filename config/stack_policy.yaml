@@ -1,0 +1,7 @@
+# Frame-combination policy for shift-and-stack and grouping (SDD §6.9).
+# Values are owned by the ML team (D-14) and are data, not code.
+
+same_release: true
+same_detector: false
+max_wavelength_span_um: null   # TBD (D-14)
+max_time_span_days: null       # TBD (D-14)

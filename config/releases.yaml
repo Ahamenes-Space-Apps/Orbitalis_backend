@@ -1,0 +1,11 @@
+# SPHEREx data releases exposed by GET /releases (SDD §8.2).
+# Release identifiers and filtering semantics are open item D-10.
+
+releases:
+  - id: qr2
+    label: Quick Release 2
+    enabled: true
+  - id: qr3
+    label: Quick Release 3
+    enabled: true
+  # DR1 reprocessing expected late fall 2026 (D-10).
