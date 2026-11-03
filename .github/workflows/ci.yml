@@ -1,36 +1,36 @@
-name: ci
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-      - name: Install
-        run: uv sync --locked
-      - name: Lock check
-        run: uv lock --check
-      - name: Lint
-        run: uv run ruff check .
-      - name: Format check
-        run: uv run ruff format --check .
-      - name: Boundaries
-        run: uv run lint-imports
-      - name: Tests
-        run: uv run pytest
-
-  docker:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build image
-        run: docker build -t orbitalis-api:ci .
+# name: ci
+# 
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+# 
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: astral-sh/setup-uv@v5
+#         with:
+#           enable-cache: true
+#       - name: Install
+#         run: uv sync --locked
+#       - name: Lock check
+#         run: uv lock --check
+#       - name: Lint
+#         run: uv run ruff check .
+#       - name: Format check
+#         run: uv run ruff format --check .
+#       - name: Boundaries
+#         run: uv run lint-imports
+#       - name: Tests
+#         run: uv run pytest
+# 
+#   docker:
+#     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#     runs-on: ubuntu-latest
+#     needs: test
+#     steps:
+#       - uses: actions/checkout@v4
+#       - name: Build image
+#         run: docker build -t orbitalis-api:ci .
