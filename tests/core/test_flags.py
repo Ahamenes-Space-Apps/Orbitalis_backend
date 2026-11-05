@@ -13,7 +13,7 @@ import math
 import numpy as np
 import pytest
 
-from orbitalis_core.flags import decode, default_mask
+from orbitalis_core.flags import apply_default_mask, decode, default_mask
 
 SOURCE = 1 << 21
 FULLSAMPLE = 1 << 12
@@ -154,8 +154,7 @@ def test_unknown_only_bits_are_masked() -> None:
     assert bool(default_mask(flags)[0]) is True
     decoded = decode(flags)
     assert bool(decoded["UNKNOWN"][0]) is True
-    for name, bit in [("TRANSIENT", TRANSIENT)]:
-        assert not bool(decoded[name][0])
+    assert not bool(decoded["TRANSIENT"][0])
 
 
 def test_source_or_fullsample_remains_valid() -> None:
@@ -203,3 +202,53 @@ def test_scalar_return_types() -> None:
     assert all(isinstance(v, np.ndarray) and v.shape == () for v in decoded.values())
     assert bool(decoded["TRANSIENT"]) is True
     assert bool(decoded["UNKNOWN"]) is False
+
+
+def test_apply_default_mask_basic() -> None:
+    image = np.array([1.0, 2.0, 3.0])
+    flags = np.array([0, 1 << 0, 1 << 21])
+    result = apply_default_mask(image, flags)
+    assert isinstance(result, np.ndarray)
+    assert result.dtype == np.float64
+    assert result[0] == 1.0
+    assert np.isnan(result[1])
+    assert result[2] == 3.0
+    # Original unchanged.
+    assert image.dtype != np.float64 or image[1] == 2.0
+
+
+def test_apply_default_mask_integer_image() -> None:
+    image = np.array([10, 20, 30], dtype=np.int32)
+    flags = np.array([0, 1 << 0, 0])
+    result = apply_default_mask(image, flags)
+    assert result.dtype == np.float64
+    assert result[0] == 10.0
+    assert np.isnan(result[1])
+    assert result[2] == 30.0
+    assert image.dtype == np.int32
+
+
+def test_apply_default_mask_does_not_mutate_original() -> None:
+    image = np.array([1.0, 2.0, 3.0])
+    flags = np.array([1 << 0, 0, 0])
+    original = image.copy()
+    _ = apply_default_mask(image, flags)
+    assert np.array_equal(image, original)
+
+
+def test_apply_default_mask_shape_mismatch() -> None:
+    image = np.array([1.0, 2.0])
+    flags = np.array([0, 0, 0])
+    with pytest.raises(ValueError):
+        apply_default_mask(image, flags)
+
+
+def test_apply_default_mask_preserves_unmasked() -> None:
+    image = np.array([[1.0, 2.0], [3.0, 4.0]])
+    flags = np.array([[0, 1 << 0], [1 << 21, 1 << 12]])
+    result = apply_default_mask(image, flags)
+    assert result.shape == image.shape
+    assert result[0, 0] == 1.0
+    assert np.isnan(result[0, 1])
+    assert result[1, 0] == 3.0
+    assert result[1, 1] == 4.0
