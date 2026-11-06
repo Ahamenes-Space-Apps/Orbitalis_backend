@@ -1,0 +1,56 @@
+id,type,requirement,sdd_section,module,gate,owner,status,tests,notes
+FR-DATA-01,FR,Resolve a field to SPHEREx frames via IRSA TAP (release/deep filtering),6.2,gateway,G1,Lead,Scaffolded,GW-*,D-01 open: confirm column names and time_bounds_lower semantics
+FR-DATA-02,FR,Fetch cutouts through one gateway with bounded concurrency and circuit breaker,6.2,gateway,G1,Lead,Scaffolded,GW-*,D-02 open: measure safe concurrency (default 4)
+FR-DATA-03,FR,Cache fields and cutouts in disposable SQLite (WAL) with eviction,6.3;7,store,G1,Backend 2,Scaffolded,ST-*,Migrations folder empty
+FR-DATA-04,FR,Build a field progressively (frames streamed as they arrive),9,pipeline,G1,Lead,Scaffolded,PL-*,
+FR-DATA-05,FR,Serve every preset offline from the demo bundle,7.7;15,demo,G3,Backend 2,Scaffolded,DM-*,Must-not-regress #9
+FR-CORE-01,FR,Decode SPHEREx FLAGS; default mask keeps SOURCE and FULLSAMPLE; masked pixels become NaN,6.1,core.flags,G1,Backend 2 + ML,Done,tests/core/test_flags.py (31 pass),PR #3 merged c1aa350. Add unknown-bit-masked test
+FR-CORE-02,FR,Per-pixel wavelength map from WCS-WAVE (own bilinear interpolation; micrometres),6.1,core.wcs,G1,Backend 2 + ML,Scaffolded,CORE-*,
+FR-CORE-03,FR,Calibration: imaging stays MJy/sr; solid angle only for spectra; zodi subtraction,6.1,core.calibration,G1,Backend 2 + ML,Scaffolded,CORE-*,D-03 deviation from DS spec needs sign-off
+FR-CORE-04,FR,Flux-conserving reprojection to a common grid with footprint,6.1,core.align,G1,Backend 2 + ML,Scaffolded,CORE-*,
+FR-CORE-05,FR,Sigma-clipped stack and difference imaging with mask and variance propagation,6.1,core.stack,G1,Backend 2 + ML,Scaffolded,CORE-*,
+FR-CORE-06,FR,Stretch parameters fixed after the first N frames,6.1,core.stretch,G1,Backend 2 + ML,Scaffolded,CORE-*,Must-not-regress #5
+FR-CORE-07,FR,Typed CoreError hierarchy; all-NaN output is an error (ORB-CORE-001/002),6.1;11,errors + core,G1,Lead,Not started,CORE-*,PR #4 errors derive from ValueError: needs shared base
+FR-CORE-08,FR,Source spectrum extraction with solid angle and wavelength-sorted errors,6.1,core.spectrum,G3,ML,Not started,CORE-*,Only needed if spectral classification goes
+FR-RS-01,FR,Shift-and-stack over a motion grid on aligned NaN-masked frames,6.1,core.shiftstack,G1,ML,In review,tests/core/test_shiftstack.py (43 on PR #4),PR #4 5d8f608. Review findings open: per-pixel best map; static sources; coverage mask; NaN spreading; vectorise
+FR-RS-02,FR,Work budget enforced before compute (ORB-RS-003); budget set from a benchmark,9.6,core.shiftstack + research,G1,ML,Partial,CORE-* RS-*,Check exists in PR #4; 2e9 default unmeasured (probe: ~110-130 s on sandbox)
+FR-RS-03,FR,Motion convention fixed and documented (units; sign; reference time),6.1;8.2b,core.shiftstack + api,G1,ML,Not started,CORE-* API-*,D-17 open. PR #4 uses px/day; SDD proposes arcsec/day
+FR-RS-04,FR,Candidate extraction from stacked score maps (position; motion vector; stack SNR),6.1,core.candidates,G1,ML,Not started,CORE-*,Blocked on shiftstack result shape (RS-01 fixes)
+FR-RS-05,FR,Stack policy gate (release; detector; wavelength and time span) as data not code,6.9,research.policy,G1,ML,Scaffolded,RS-*,D-14 open: values in config/stack_policy.yaml
+FR-RS-06,FR,Every candidate is unconfirmed; there is no confirmed state,8.5,research + store,G2,ML,Not started,RS-* API-*,Must-not-regress #11
+FR-RS-07,FR,Moving-object search job end to end (POST /jobs; candidates endpoints; SSE),6.9;8.2b,research.search + jobs,G2,ML + Backend 2,Not started,RS-* JOB-* API-*,
+FR-VAL-01,FR,Injection into copies; never mutates stored frames,6.1,core.inject,G2,ML,Not started,CORE-*,Must-not-regress #10
+FR-VAL-02,FR,Outcome classes recovered/missed/preexisting/spurious; precision relative to injected,6.1;6.9,core.inject + research.validation,G2,ML,Not started,CORE-* RS-*,D-15 open
+FR-VAL-03,FR,Metrics: recall; precision; position error; completeness by flux and speed bin,6.1,core.inject,G2,ML,Not started,CORE-*,
+FR-VAL-04,FR,Validation experiment job and /experiments endpoints with seed and parameters stored,6.9;8.2b,research.validation + store,G2,ML + Backend 2,Not started,RS-* API-*,
+FR-ML-01,FR,Candidate ranking CNN trained offline; shipped as ONNX; scores paired with model_version,6.1,core.rank + ml/,G2 stretch,ML,Scaffolded,CORE-* ML-*,ml/train_ranker.py is a stub. D-18 open
+FR-ML-02,FR,Missing model file means feature disabled; app still starts,11.4,core.rank + api,G3,ML + Backend 2,Not started,API-* ML-*,Must-not-regress #14
+FR-ML-03,FR,Spectral classification returns None with reason when data insufficient,6.1,core.classify,G3 optional,ML,Not started,CORE-*,D-19 go/no-go at G2
+FR-JOB-01,FR,In-process job runner with idempotent job_id and statuses queued/running/completed/failed/cancelled,6.8,jobs,G1,Backend 2,Scaffolded,JOB-*,
+FR-JOB-02,FR,Job timeout and restart handling (ORB-JOB-003/004); queue-full 429,6.8;11,jobs,G1,Backend 2,Not started,JOB-*,
+FR-JOB-03,FR,Cancellation and cleanup,9.5,jobs + pipeline,G2,Backend 2,Not started,JOB-* PL-*,
+FR-API-01,FR,Field endpoints and capability flags,8.2,api,G1,Lead,Scaffolded,API-*,Routers exist as stubs
+FR-API-02,FR,SSE with Last-Event-ID replay for fields and jobs,8.3;8.6,api + eventbus,G1,Lead,Scaffolded,API-*,
+FR-API-03,FR,Frame PNG (LA mode) plus meta; masked alpha 0,8.4,api,G1,Lead,Not started,API-*,D-06 open
+FR-API-04,FR,Honesty fields in every relevant response,8.5,api,G2,Lead,Not started,API-*,
+FR-API-05,FR,Stable error envelope ORB-{MODULE}-{SEQ},11;App B,errors + api,G1,Lead,Scaffolded,API-*,
+FR-OV-01,FR,Known-object and hypothesis overlays; observed/predicted/candidate never share a type,6.5,overlays,G2,Backend 2,Scaffolded,API-*,D-04 open. Must-not-regress #7
+FR-AS-01,FR,Grounded assistant with streaming chat and read-only tools,6.10,assistant,G3,Backend 2 + ML,Scaffolded,AS-*,D-13 provider open
+FR-AS-02,FR,Assistant tools never write; never launch a job; never contact IRSA,6.10,assistant,G3,Backend 2,Not started,AS-*,Must-not-regress #15
+FR-AS-03,FR,Assistant rate limit and daily budget (ORB-AS-002/003),6.10,assistant,G3,Backend 2,Not started,AS-*,
+FR-OPS-01,FR,Containerised build (uv; multi-stage) and Cloud Run deploy with min-instances=1,3;15,Dockerfile + deploy,G3,Backend 2,Partial,manual,Dockerfile and CI file exist; CI checks currently commented out
+FR-OPS-02,FR,Demo bundle baked by script (presets + search results + experiment),7.7,scripts/bake_demo.py,G3,Backend 2,Scaffolded,DM-*,
+NFR-01,NFR,orbitalis_core imports nothing from orbitalis (import-linter),5.3,repo,G1,Lead,Partial,scripts/check_boundaries.sh,Script exists; run in CI once re-enabled
+NFR-02,NFR,Module skeleton: __init__ is public surface only; header docstrings,5.2,repo,G1,All,Partial,review,Applies to PR #4 (fine) and PR #3 (fixed)
+NFR-03,NFR,Performance targets (13.3) measured and tuned,13.3,all,G1,Lead + ML,Not started,benchmark,Search under 60 s; ranking 100 under 10 s
+NFR-04,NFR,Determinism: fixed seed gives identical output,12;6.1,core + research,G2,ML,Not started,CORE-* RS-*,Needed for validation reproducibility
+NFR-05,NFR,CI: lint; format; types; tests; boundaries on every PR,12.4,.github,G1,Lead,Partial,CI,Checks were commented out; commit to develop bypassed branch rule
+NFR-06,NFR,Test suite offline and seeded; IRSA mocked,12,tests,G1,All,Partial,tests/,Only test_flags.py populated on develop
+NFR-07,NFR,Secrets only in environment; LLM key optional,10.3,settings,G3,Lead,Scaffolded,API-*,
+NFR-08,NFR,Dependency policy: new dependency recorded with purpose,4.4,pyproject,G1,All,Partial,review,onnxruntime added only in ml group
+DOC-01,DOC,SDD v1.1 (ML brief incorporated),,docs,G1,Lead,Done,n/a,Docs/ORBITALIS_SDD.md
+DOC-02,DOC,AGENTS.md and Tests.md in repo,14.6,docs,G1,Lead,Done,n/a,Committed to develop
+DOC-03,DOC,ML spec (models; training data; metrics definitions),,docs,G2,ML,Not started,n/a,D-11 residual
+GATE-G1,GATE,"Core pipeline end to end on a preset; shift-and-stack on synthetic data; budget benchmarked",15.6,all,G1,Lead,Not started,E2E-*,Proposed date: Sun 8 Nov
+GATE-G2,GATE,"Real-field search; injection-and-recovery experiment; stretch: ranking",15.6,all,G2,Lead + ML,Not started,E2E-*,Proposed date: Tue 10 Nov
+GATE-G3,GATE,"Freeze: everything not ready ships disabled; demo bundle complete; offline cold start passes",15.6,all,G3,Lead,Not started,E2E-*,Proposed date: Wed 11 Nov

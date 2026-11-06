@@ -10,6 +10,8 @@ Python backend for ORBITALIS, a tool for exploring NASA SPHEREx observations thr
 - `Docs/ORBITALIS — Product Requirements Document (PRD) v0.1 (2).md`
 - `Docs/ORBITALIS — Data and Science Specification v0.1.md`
 - `Docs/ORBITALIS — UX Design & User Flows.md`
+- `Docs/Roadmap - execution order, current state and per-task acceptance criteria.`
+- `Docs/traceability - requirement to section to test mapping.`
 
 ## Layout
 
