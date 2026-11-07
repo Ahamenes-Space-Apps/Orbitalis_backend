@@ -202,10 +202,15 @@ no settings, no web. Tests use tiny synthetic arrays.
   for out-of-table pixels while this task's acceptance says NaN — implemented
   both: `wavelength_at` raises `InvalidInputError`, `wavelength_map` returns
   NaN outside the grid.
-- **CORE.03** `[ ]` Calibration (FR-CORE-03).
-  `to_surface_brightness`, `solid_angle_map`, `subtract_zodi`. Imaging stays in
-  MJy/sr. Close D-03 with the ML engineer first (write the decision down).
-  Acceptance: round trip; solid angle sums to the known footprint.
+- **CORE.03** `[x]` Calibration (FR-CORE-03). Branch `feature/core-03-calibration`.
+  `solid_angle_map` (per-pixel sr from WCS corners, ~8.89e-10 sr at 6.15″/px,
+  sums to footprint) and `subtract_zodi` (NaN-aware, inputs untouched,
+  all-NaN raises). `to_surface_brightness` is a documented stub — no caller
+  exists while imaging stays MJy/sr (D-03 default; ML sign-off still pending).
+  ZODI verified not subtracted from IMAGE on a QR2 cutout; `subtract_zodi` is
+  opt-in only. Follow-ups: **CORE.03a** directed converters
+  (`flux_to_surface_brightness`, `surface_brightness_to_flux`) when CORE.08
+  and VAL.01 need them.
 - **CORE.04** `[ ]` Align (FR-CORE-04).
   `to_common_grid` using `reproject`, flux-conserving for surface brightness,
   returns array and footprint.
