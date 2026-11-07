@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from orbitalis_core.errors import EmptyResultError, InvalidInputError
-from orbitalis_core.stretch import StretchState, apply_stretch, fit_stretch
+from orbitalis_core.stretch import StretchState, apply_stretch, fit_stretch, initial_stretch
 
 
 def _frames(n: int, base: float = 0.0) -> list[np.ndarray]:
@@ -93,6 +93,15 @@ def test_stretch_state_provisional_before_freeze() -> None:
     fitted = state.observe(frames[2])
     assert fitted is not None and fitted != provisional
     assert state.observe(frames[3]) == fitted
+
+
+def test_initial_stretch_fits_first_frame() -> None:
+    frame = _frames(1)[0]
+    p = initial_stretch(frame)
+    p_direct = fit_stretch([frame])
+    assert p == p_direct
+    with pytest.raises(EmptyResultError):
+        initial_stretch(np.full((4, 4), np.nan))
 
 
 def test_stretch_state_rejects_bad_provisional() -> None:

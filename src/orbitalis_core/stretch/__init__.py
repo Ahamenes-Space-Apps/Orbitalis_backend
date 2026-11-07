@@ -14,6 +14,7 @@ from .stretch import (
     StretchState,
     apply_stretch,
     fit_stretch,
+    initial_stretch,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "StretchState",
     "apply_stretch",
     "fit_stretch",
+    "initial_stretch",
 ]

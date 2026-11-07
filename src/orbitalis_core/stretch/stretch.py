@@ -116,6 +116,17 @@ def apply_stretch(array: Any, params: StretchParams) -> np.ndarray:
     return check_not_all_nan(out, name="stretched image")
 
 
+def initial_stretch(array: Any, **fit_kwargs: Any) -> StretchParams:
+    """Provisional stretch fitted on the first frame only.
+
+    Pipeline rule for ``StretchState(provisional=...)``: the viewer gets a
+    data-driven curve from frame one instead of ``None``; it is replaced by
+    the frozen fit at ``fix_n``. A fully masked first frame raises
+    ``EmptyResultError`` — callers should catch it and pass ``None``.
+    """
+    return fit_stretch([array], **fit_kwargs)
+
+
 class StretchState:
     """Freeze-after-N-frames stretch bookkeeping (must-not-regress #5).
 
@@ -184,4 +195,5 @@ __all__ = [
     "StretchState",
     "apply_stretch",
     "fit_stretch",
+    "initial_stretch",
 ]
