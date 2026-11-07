@@ -8,8 +8,10 @@ Called by: orbitalis_core.shiftstack modules.
 
 from __future__ import annotations
 
+from ..errors import CoreError
 
-class ShiftStackError(ValueError):
+
+class ShiftStackError(CoreError, ValueError):
     """Base class for shift-and-stack input and computation errors."""
 
 
@@ -19,3 +21,5 @@ class InvalidInputError(ShiftStackError):
 
 class WorkBudgetExceededError(ShiftStackError):
     """Raised when a search would exceed its configured work budget."""
+
+    code = "ORB-RS-003"
