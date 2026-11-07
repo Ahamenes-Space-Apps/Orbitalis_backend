@@ -1,7 +1,11 @@
-"""Reprojection of frames onto a common grid.
+"""Image alignment onto a common grid.
 
-Purpose: Reprojection of frames onto a common grid.
-Inputs: TBD (scaffold placeholder).
-Outputs: TBD (scaffold placeholder).
-Called by: TBD (scaffold placeholder; see SDD section 5.3).
+Purpose: Public surface for reprojection helpers.
+Inputs: None at import.
+Outputs: Re-exported functions.
+Called by: Pipeline, research handlers and tests.
 """
+
+from .grid import to_common_grid
+
+__all__ = ["to_common_grid"]

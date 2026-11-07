@@ -211,10 +211,12 @@ no settings, no web. Tests use tiny synthetic arrays.
   opt-in only. Follow-ups: **CORE.03a** directed converters
   (`flux_to_surface_brightness`, `surface_brightness_to_flux`) when CORE.08
   and VAL.01 need them.
-- **CORE.04** `[ ]` Align (FR-CORE-04).
-  `to_common_grid` using `reproject`, flux-conserving for surface brightness,
-  returns array and footprint.
-  Acceptance: a shifted synthetic image lands on the target grid; flux conserved.
+- **CORE.04** `[x]` Align (FR-CORE-04). Branch `feature/core-04-align` (stacked on CORE.03).
+  `to_common_grid` via `reproject_interp` (surface-brightness conserving),
+  returns array + coverage footprint; NaN propagates; all-NaN raises.
+  D-03 closed with measurement: MJy/sr vs flux-per-pixel resampling agree
+  within 2% median (`test_d03_surface_brightness_vs_flux_per_pixel`); SDD
+  marked resolved v1.2, DS spec §5/§7 annotated.
 - **CORE.05** `[ ]` Stack and difference (FR-CORE-05).
   Sigma-clipped mean/median; mask and variance propagation.
   Acceptance: clipped outlier removed; variance matches analytic value.
