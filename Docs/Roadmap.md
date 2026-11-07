@@ -227,9 +227,16 @@ no settings, no web. Tests use tiny synthetic arrays.
   `difference` (NaN union mask). All-NaN raises. Note: `shiftstack/combine`
   on PR #4 duplicates this logic — consolidate onto `orbitalis_core.stack`
   when RS.01 lands (review decision: one implementation).
-- **CORE.06** `[ ]` Stretch (FR-CORE-06).
-  `fit_stretch` and `apply_stretch`; parameters frozen after N frames.
-  Acceptance: later frames never change fitted parameters.
+- **CORE.06** `[x]` Stretch (FR-CORE-06). Branch `feature/core-06-stretch`.
+  `fit_stretch`/`apply_stretch` (percentile-bounded asinh, PROVISIONAL
+  constants) plus `StretchState` enforcing freeze after `fix_n` frames —
+  later frames can never change parameters; `provisional` curve covers the
+  pre-freeze frames. Deterministic; all-NaN raises.
+  Follow-up **CORE.06a** `[ ]`: measure real SPHEREx background vs wavelength
+  on cutouts before G1 — one frozen stretch saturates if bands differ
+  strongly; if so, stretch after background subtraction or fit on a
+  wavelength spread. Also: renderer must catch `EmptyResultError` on fully
+  masked frames and draw blank.
 - **RS.01** `[~]` Shift-and-stack (FR-RS-01), PR #4 (`5d8f608`).
   Done in the PR: module split, correct shift sign, NaN fill at edges, budget check
   before compute, input not mutated, 43 tests.
