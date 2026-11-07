@@ -1193,6 +1193,7 @@ PRD requirement IDs are not repeated here to avoid drift; this table maps capabi
 | D-20 | Confirm `min-instances=1` for the whole event fits the GCP credit; confirm restart semantics are acceptable to the team. | Lead | G1 |
 | D-21 | Frontend: chat via `fetch` streaming (POST); jobs via polling or `EventSource`; confirm approach in Next/Nuxt. | Frontend | G1 |
 | D-22 | Overlay kind rename (`candidates` → `hypothesis`) and the "candidate" vocabulary: confirm with PRD and frontend. | Lead | G1 |
+| D-23 | Resolved doc conflict: Tests.md CORE-WCS-02 said out-of-table pixel → `CoreError`; roadmap CORE.02 acceptance said NaN. Resolution: `wavelength_at`/`bandwidth_at` raise `InvalidInputError` (ORB-CORE-001); `wavelength_map`/`bandwidth_map` return NaN per-pixel but raise `EmptyResultError` (ORB-CORE-002) if the whole map is outside. Tests.md updated to match. | Lead | — |
 
 Gates: **G1** end-of-day-1 feasibility (live IRSA end to end for one field, job runner skeleton, shift-and-stack proven on synthetic data), **G2** mid-event (UI + pipeline integrated, real search and validation on a preset), **G3** pre-demo freeze (unready features ship disabled; see §15.6).
 

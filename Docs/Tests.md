@@ -108,7 +108,7 @@ Rules: fixtures are tiny (arrays ≤ 64×64, ≤ 12 frames unless the test is ab
 | CORE-FLG-02 | Apply default mask to an image | Masked pixels are NaN, never 0 | P0 |
 | CORE-FLG-03 | Decode a combined flag value | Returns the exact set of named bits | P1 |
 | CORE-WCS-01 | Wavelength at lookup nodes | Equals the table value; between nodes equals bilinear interpolation (own implementation) | P0 |
-| CORE-WCS-02 | Pixel outside the table | `CoreError`, not extrapolation | P1 |
+| CORE-WCS-02 | Pixel outside the table | `CoreError`, not extrapolation — `wavelength_at`/`bandwidth_at` raise `InvalidInputError`; `*_map` variants return NaN per-pixel and raise `EmptyResultError` if all pixels are outside (SDD D-23) | P1 |
 | CORE-CAL-01 | Constant surface-brightness image through alignment | Output stays constant within 1% *(initial)*; unit remains MJy/sr | P0 |
 | CORE-CAL-02 | Solid-angle map at 6.15″/px | ≈ 8.89 × 10⁻¹⁰ sr per pixel, within 1% | P1 |
 | CORE-CAL-03 | Imaging pipeline output | Never has solid angle applied; only `spectrum` does | P0 |
