@@ -211,10 +211,16 @@ no settings, no web. Tests use tiny synthetic arrays.
   opt-in only. Follow-ups: **CORE.03a** directed converters
   (`flux_to_surface_brightness`, `surface_brightness_to_flux`) when CORE.08
   and VAL.01 need them.
-- **CORE.04** `[ ]` Align (FR-CORE-04).
-  `to_common_grid` using `reproject`, flux-conserving for surface brightness,
-  returns array and footprint.
-  Acceptance: a shifted synthetic image lands on the target grid; flux conserved.
+- **CORE.04** `[x]` Align (FR-CORE-04). Branch `feature/core-04-align` (stacked on CORE.03).
+  `to_common_grid` via `reproject_interp` (surface-brightness conserving),
+  returns array + coverage footprint; NaN propagates; all-NaN raises.
+  D-03 closed with measurement: on a 10° field (asserted >1% solid-angle
+  spread) MJy/sr vs flux-per-pixel resampling agree ~0.01%
+  (`test_d03_surface_brightness_vs_flux_per_pixel`). Bilinear smoothing is
+  measured (~17% peak loss on a sigma=1 px source) and documented.
+  Follow-ups: **CORE.04a** resample variance arrays (weights get squared —
+  not the same operation) for stack/shiftstack; **PL.01** must resample
+  masks conservatively and dilate bad-pixel footprints by 1 px (DS spec §7).
 - **CORE.05** `[ ]` Stack and difference (FR-CORE-05).
   Sigma-clipped mean/median; mask and variance propagation.
   Acceptance: clipped outlier removed; variance matches analytic value.
@@ -272,6 +278,9 @@ Read SDD §6.2–6.4, §7, §9. Network only inside `gateway`, mocked in tests.
 - **PL.01** `[ ]` Field builder (FR-DATA-04).
   gateway → core (flags, wcs, calibration, align, stretch) → store, emitting
   progress events; degradation ladder (SDD §11.2); cancellation at boundaries.
+  Must resample masks conservatively and dilate bad-pixel footprints by 1 px
+  (DS spec §7; CORE.04 follow-up). Variance arrays need their own resample
+  path (CORE.04a).
   Acceptance: a fixture field builds end to end; cancel leaves no partial state.
 - **JOB.01** `[ ]` Job runner (FR-JOB-01).
   Statuses queued/running/completed/failed/cancelled; idempotent `job_id`; fixed
