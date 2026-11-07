@@ -224,7 +224,9 @@ no settings, no web. Tests use tiny synthetic arrays.
 - **CORE.05** `[x]` Stack and difference (FR-CORE-05). Branch `feature/core-05-stack`.
   `combine` (sigma-clipped mean/median via MAD scale, NaN-aware, optional
   per-frame variance propagation `sum(var)/n_kept²`, coverage map) and
-  `difference` (NaN union mask). All-NaN raises.
+  `difference` (NaN union mask). All-NaN raises. Note: `shiftstack/combine`
+  on PR #4 duplicates this logic — consolidate onto `orbitalis_core.stack`
+  when RS.01 lands (review decision: one implementation).
 - **CORE.06** `[ ]` Stretch (FR-CORE-06).
   `fit_stretch` and `apply_stretch`; parameters frozen after N frames.
   Acceptance: later frames never change fitted parameters.

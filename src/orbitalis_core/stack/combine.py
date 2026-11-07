@@ -13,7 +13,7 @@ and tests.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 
@@ -71,18 +71,27 @@ def _check_variances(variances: Any, shape: tuple[int, int], n_frames: int) -> n
 def combine(
     frames: Any,
     *,
-    method: str = "mean",
+    method: Literal["mean", "median"] = "mean",
     sigma: float = 3.0,
     variances: Any = None,
 ) -> CombineResult:
-    """Sigma-clipped combine of aligned frames.
+    """Sigma-clipped combine of aligned frames (single-pass clip).
 
-    Per pixel, values beyond ``median +/- sigma * std`` (NaN-aware, computed
-    on the finite values) are rejected before averaging; pixels with fewer
-    than two finite frames or zero spread keep all finite values. ``method``
-    is ``"mean"`` or ``"median"``. ``variances`` optionally supplies one
-    variance array per frame; for ``method="mean"`` the output variance is
-    ``sum(var_i)/n_kept**2`` (independent frames, unweighted mean). For
+    Per pixel, values beyond ``median +/- sigma * (1.4826 * MAD)`` — a
+    robust, outlier-resistant spread — are rejected before averaging.
+    Clipping applies only where at least three frames have finite values;
+    pixels with fewer keep all finite values. The clip is single-pass: the
+    median/MAD are computed once on all finite values and never recomputed.
+
+    Zero-spread note: when MAD is 0 (the typical value is exact, e.g. mostly
+    identical frames), ``scale`` is 0 and only values equal to the median
+    survive — a deviating minority is rejected, not averaged in.
+
+    ``method`` is ``"mean"`` or ``"median"``. ``variances`` optionally
+    supplies one variance array per frame; for ``method="mean"`` the output
+    variance is ``sum(var_i)/n_kept**2`` (independent frames, unweighted
+    mean). A kept pixel whose variance is NaN or non-finite yields NaN
+    variance for that pixel — never an underestimate. For
     ``method="median"`` no closed-form variance exists, so ``variance`` is
     ``None``. Pixels where every frame is masked stay NaN; an all-NaN result
     raises ``EmptyResultError``.
@@ -123,7 +132,15 @@ def combine(
     if method == "mean" and var_cube is not None:
         kept_var = np.where(keep, var_cube, np.nan)
         var_sum = np.nansum(kept_var, axis=0)
-        variance = np.where(n_kept > 0, var_sum / np.maximum(n_kept, 1) ** 2, np.nan)
+        # A kept pixel is only as good as its worst variance: if any
+        # contributing frame has NaN/non-finite variance, the output
+        # variance is NaN rather than an underestimate.
+        var_missing = (keep & ~np.isfinite(var_cube)).sum(axis=0) > 0
+        variance = np.where(
+            n_kept > 0,
+            np.where(var_missing, np.nan, var_sum / np.maximum(n_kept, 1) ** 2),
+            np.nan,
+        )
 
     coverage = n_kept.astype(np.int64)
     return CombineResult(

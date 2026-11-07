@@ -98,6 +98,27 @@ def test_clipped_pixel_variance_uses_kept_count() -> None:
     assert out.variance[0, 0] == pytest.approx(0.04 * 3 / 9)
 
 
+def test_zero_mad_rejects_deviating_minority() -> None:
+    """MAD == 0: only values equal to the median survive (documented behavior)."""
+    frames = _frames(4, 1.0, shape=(1, 1))
+    frames = np.concatenate([frames, np.full((1, 1, 1), 1.2)])
+    out = combine(frames)
+    assert out.data[0, 0] == pytest.approx(1.0)
+    assert out.coverage[0, 0] == 4
+
+
+def test_nan_variance_yields_nan_output_variance() -> None:
+    """A kept frame with NaN variance must not underestimate the result."""
+    frames = _frames(4, 1.0, shape=(1, 1))
+    frames[0, 0, 0] += 0.1
+    frames[1, 0, 0] -= 0.1
+    frames[2, 0, 0] += 0.2
+    variances = np.full((4, 1, 1), 0.09)
+    variances[1, 0, 0] = np.nan
+    out = combine(frames, variances=variances)
+    assert np.isnan(out.variance[0, 0])
+
+
 def test_all_nan_result_raises() -> None:
     frames = np.full((2, 2, 2), np.nan)
     with pytest.raises(EmptyResultError):
