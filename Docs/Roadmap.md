@@ -305,6 +305,10 @@ Read SDD §6.1, §6.9, §8.2b. Owner: ML engineer, with backend support on plumb
   per-frame cutouts rendered on demand from stored arrays.
 - **RS.07** `[ ]` Synthetic search end-to-end test.
   Inject a mover into a fixture field, run the job, recover it. This is the G1 exit test.
+- **RS.09** `[ ]` Decide when `subtract_zodi` runs before `moving_object_search`.
+  Nothing currently decides it; the ZODI model is a smooth background, and
+  whether to subtract it interacts with the static-source problem in PR #4
+  review item 2. Decide with the ML engineer before RS.05 wires the handler.
 - **RS.08** `[ ]` Real preset search (G2).
   Run on a real preset field, tune the work budget, bake the result into the demo bundle.
 

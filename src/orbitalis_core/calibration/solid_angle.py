@@ -13,6 +13,7 @@ injection, tests.
 
 from __future__ import annotations
 
+import operator
 from typing import Any
 
 import numpy as np
@@ -56,15 +57,25 @@ def solid_angle_map(wcs: Any, shape: tuple[int, int]) -> np.ndarray:
     evaluations; intended for on-demand spectrum/injection use, not per-frame
     imaging.
     """
+    if not isinstance(shape, (tuple, list)) or len(shape) != 2:
+        raise InvalidInputError(
+            f"shape must be a (rows, cols) pair of positive ints, got {shape!r}"
+        )
+    try:
+        ny, nx = operator.index(shape[0]), operator.index(shape[1])
+    except TypeError as exc:
+        raise InvalidInputError(
+            f"shape must be a (rows, cols) pair of positive ints, got {shape!r}"
+        ) from exc
     if (
-        not isinstance(shape, tuple)
-        or len(shape) != 2
-        or any(not isinstance(n, int) or n < 1 for n in shape)
+        isinstance(shape[0], (bool, np.bool_))
+        or isinstance(shape[1], (bool, np.bool_))
+        or ny < 1
+        or nx < 1
     ):
         raise InvalidInputError(
-            f"shape must be a (rows, cols) tuple of positive ints, got {shape!r}"
+            f"shape must be a (rows, cols) pair of positive ints, got {shape!r}"
         )
-    ny, nx = shape
     ctype = [str(c) for c in np.atleast_1d(wcs.wcs.ctype)]
     if len(ctype) < 2 or not ctype[0].startswith("RA") or not ctype[1].startswith("DEC"):
         raise InvalidInputError(f"wcs must be a celestial RA/DEC WCS, got CTYPE={ctype}")

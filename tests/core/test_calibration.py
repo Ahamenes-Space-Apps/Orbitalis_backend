@@ -70,6 +70,18 @@ def test_solid_angle_map_rejects_bad_shape() -> None:
     w = _tan_wcs(0.0, 0.001, (2.0, 2.0))
     with pytest.raises(InvalidInputError):
         solid_angle_map(w, (4,))  # type: ignore[arg-type]
+    with pytest.raises(InvalidInputError):
+        solid_angle_map(w, (4.0, 4))  # type: ignore[arg-type]
+    with pytest.raises(InvalidInputError):
+        solid_angle_map(w, (True, 4))  # type: ignore[arg-type]
+    with pytest.raises(InvalidInputError):
+        solid_angle_map(w, (0, 4))
+
+
+def test_solid_angle_map_accepts_numpy_int_shape() -> None:
+    w = _tan_wcs(0.0, 0.001, (2.0, 2.0))
+    out = solid_angle_map(w, (np.int64(4), np.int32(4)))
+    assert out.shape == (4, 4)
 
 
 # --- subtract_zodi ---------------------------------------------------------
