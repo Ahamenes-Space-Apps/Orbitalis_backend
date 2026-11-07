@@ -8,7 +8,7 @@ FR-CORE-01,FR,Decode SPHEREx FLAGS; default mask keeps SOURCE and FULLSAMPLE; ma
 FR-CORE-02,FR,Per-pixel wavelength map from WCS-WAVE (own bilinear interpolation; micrometres),6.1,core.wcs,G1,Backend 2 + ML,In review,CORE-WCS-01;CORE-WCS-02,wave_tab + bilinear verified vs real IRSA cutout (0.21 nm); scalar raises / map NaN outside grid
 FR-CORE-03,FR,Calibration: imaging stays MJy/sr; solid angle only for spectra; zodi subtraction,6.1,core.calibration,G1,Backend 2 + ML,In review,CORE-CAL-01;CORE-CAL-02;CORE-CAL-03,solid_angle_map+subtract_zodi done; to_surface_brightness stub pending CORE.03a (CORE.08/VAL.01); D-03 ML sign-off pending
 FR-CORE-04,FR,Flux-conserving reprojection to a common grid with footprint,6.1,core.align,G1,Backend 2 + ML,Scaffolded,CORE-*,
-FR-CORE-05,FR,Sigma-clipped stack and difference imaging with mask and variance propagation,6.1,core.stack,G1,Backend 2 + ML,Scaffolded,CORE-*,
+FR-CORE-05,FR,Sigma-clipped stack and difference imaging with mask and variance propagation,6.1,core.stack,G1,Backend 2 + ML,In review,CORE-STK-01;CORE-STK-02,MAD-based sigma clip; variance=sum(var)/n_kept^2 for mean
 FR-CORE-06,FR,Stretch parameters fixed after the first N frames,6.1,core.stretch,G1,Backend 2 + ML,Scaffolded,CORE-*,Must-not-regress #5
 FR-CORE-07,FR,Typed CoreError hierarchy; all-NaN output is an error (ORB-CORE-001/002),6.1;11,errors + core,G1,Lead,Partial,CORE-*,CoreError/InvalidInputError/EmptyResultError/check_not_all_nan landed; shiftstack retrofit pending on PR #4
 FR-CORE-08,FR,Source spectrum extraction with solid angle and wavelength-sorted errors,6.1,core.spectrum,G3,ML,Not started,CORE-*,Only needed if spectral classification goes

@@ -221,9 +221,10 @@ no settings, no web. Tests use tiny synthetic arrays.
   Follow-ups: **CORE.04a** resample variance arrays (weights get squared —
   not the same operation) for stack/shiftstack; **PL.01** must resample
   masks conservatively and dilate bad-pixel footprints by 1 px (DS spec §7).
-- **CORE.05** `[ ]` Stack and difference (FR-CORE-05).
-  Sigma-clipped mean/median; mask and variance propagation.
-  Acceptance: clipped outlier removed; variance matches analytic value.
+- **CORE.05** `[x]` Stack and difference (FR-CORE-05). Branch `feature/core-05-stack`.
+  `combine` (sigma-clipped mean/median via MAD scale, NaN-aware, optional
+  per-frame variance propagation `sum(var)/n_kept²`, coverage map) and
+  `difference` (NaN union mask). All-NaN raises.
 - **CORE.06** `[ ]` Stretch (FR-CORE-06).
   `fit_stretch` and `apply_stretch`; parameters frozen after N frames.
   Acceptance: later frames never change fitted parameters.
