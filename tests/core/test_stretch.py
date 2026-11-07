@@ -83,6 +83,23 @@ def test_stretch_state_params_none_before_freeze() -> None:
     assert state.params is None and not state.is_frozen
 
 
+def test_stretch_state_provisional_before_freeze() -> None:
+    """Provisional curve is returned pre-freeze, then replaced by the fit."""
+    provisional = fit_stretch(_frames(2, base=100.0))
+    state = StretchState(fix_n=3, provisional=provisional)
+    frames = _frames(4)
+    for f in frames[:2]:
+        assert state.observe(f) == provisional
+    fitted = state.observe(frames[2])
+    assert fitted is not None and fitted != provisional
+    assert state.observe(frames[3]) == fitted
+
+
+def test_stretch_state_rejects_bad_provisional() -> None:
+    with pytest.raises(InvalidInputError):
+        StretchState(fix_n=2, provisional="nope")  # type: ignore[arg-type]
+
+
 def test_stretch_state_validates_fix_n() -> None:
     with pytest.raises(InvalidInputError):
         StretchState(fix_n=0)

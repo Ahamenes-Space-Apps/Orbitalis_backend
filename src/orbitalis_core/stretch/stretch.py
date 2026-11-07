@@ -3,6 +3,12 @@
 Purpose: Fit a normalization curve once from the first N frames, then apply
 it unchanged to every later frame so scrubbing does not flicker (SDD §9.4,
 must-not-regress #5, ``ORB_STRETCH_FIX_N``).
+
+Known limitation (CORE.06 review): one frozen curve assumes the sky
+background is roughly stable across the fitted frames. SPHEREx background
+varies with wavelength — if real cutouts show large band-to-band swings,
+either subtract the background before stretching or fit on a spread of
+wavelengths; verify on real data before G1 (roadmap CORE.06a).
 Inputs: 2-D MJy/sr arrays with NaN masks; percentile bounds and an asinh
 softness.
 Outputs: ``StretchParams`` and stretched arrays scaled to [0, 1].
@@ -114,15 +120,34 @@ class StretchState:
     """Freeze-after-N-frames stretch bookkeeping (must-not-regress #5).
 
     Feed every frame to ``observe`` in arrival order. Until ``fix_n`` frames
-    have been seen it returns ``None``; on the ``fix_n``-th frame it fits the
-    parameters once and returns them; every later call returns the same
-    frozen ``StretchParams`` — later frames can never change them.
+    have been seen it returns ``provisional`` (or ``None`` if none was
+    given); on the ``fix_n``-th frame it fits the parameters once and
+    returns them; every later call returns the same frozen
+    ``StretchParams`` — later frames can never change them.
+
+    ``provisional`` is a caller-supplied placeholder curve for the first
+    frames, so the viewer has something to render before the freeze point
+    (SDD §13.3 first-frame target). The pipeline should re-render at the
+    freeze point. It is a display convenience only — it is never fitted
+    from data and is discarded once the real parameters exist.
+
+    A fully masked frame raises ``EmptyResultError`` from ``fit_stretch``
+    at the freeze point (or from ``apply_stretch``); renderers must catch
+    it and draw a blank frame.
     """
 
-    def __init__(self, fix_n: int = 8, **fit_kwargs: Any) -> None:
+    def __init__(
+        self,
+        fix_n: int = 8,
+        provisional: StretchParams | None = None,
+        **fit_kwargs: Any,
+    ) -> None:
         if not isinstance(fix_n, int) or fix_n < 1:
             raise InvalidInputError("fix_n must be a positive integer")
+        if provisional is not None and not isinstance(provisional, StretchParams):
+            raise InvalidInputError("provisional must be a StretchParams or None")
         self._fix_n = fix_n
+        self._provisional = provisional
         self._fit_kwargs = fit_kwargs
         self._buffer: list[np.ndarray] = []
         self._params: StretchParams | None = None
@@ -136,7 +161,7 @@ class StretchState:
             raise InvalidInputError("stretch inputs must be 2-D numeric arrays")
         self._buffer.append(arr)
         if len(self._buffer) < self._fix_n:
-            return None
+            return self._provisional
         self._params = fit_stretch(self._buffer, **self._fit_kwargs)
         self._buffer.clear()
         return self._params

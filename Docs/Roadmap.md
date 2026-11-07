@@ -230,7 +230,13 @@ no settings, no web. Tests use tiny synthetic arrays.
 - **CORE.06** `[x]` Stretch (FR-CORE-06). Branch `feature/core-06-stretch`.
   `fit_stretch`/`apply_stretch` (percentile-bounded asinh, PROVISIONAL
   constants) plus `StretchState` enforcing freeze after `fix_n` frames —
-  later frames can never change parameters. Deterministic; all-NaN raises.
+  later frames can never change parameters; `provisional` curve covers the
+  pre-freeze frames. Deterministic; all-NaN raises.
+  Follow-up **CORE.06a** `[ ]`: measure real SPHEREx background vs wavelength
+  on cutouts before G1 — one frozen stretch saturates if bands differ
+  strongly; if so, stretch after background subtraction or fit on a
+  wavelength spread. Also: renderer must catch `EmptyResultError` on fully
+  masked frames and draw blank.
 - **RS.01** `[~]` Shift-and-stack (FR-RS-01), PR #4 (`5d8f608`).
   Done in the PR: module split, correct shift sign, NaN fill at edges, budget check
   before compute, input not mutated, 43 tests.
