@@ -124,24 +124,30 @@ def test_validation() -> None:
 
 
 def test_d03_surface_brightness_vs_flux_per_pixel() -> None:
-    """SDD D-03 evidence: both resampling orders agree within 2%.
+    """SDD D-03 evidence: both resampling orders agree within tolerance.
 
     Path A (SDD): resample MJy/sr directly with interpolation.
     Path B (DS spec): multiply by the solid-angle map to get flux per pixel,
     resample with the flux-conserving reproject_exact, divide by the target
-    solid angle. On a field where pixel area varies, the two must agree —
-    that is the measurement that closes D-03.
+    solid angle. The field is 10 degrees across so the pixel solid angle
+    varies by >1% — the measured spread is asserted so the test cannot pass
+    vacuously. Agreement is ~0.01%, far below the area variation, which is
+    what makes the MJy/sr choice safe.
     """
-    w1 = _tan_wcs((30.0, 40.0), (30.5, 30.5), 0.02)  # ~1.2 deg field -> omega varies
-    w2 = _tan_wcs((30.004, 39.996), (30.5, 30.5), 0.02)
-    shape = (60, 60)
+    n = 60
+    fov_deg = 10.0  # ~2.3% solid-angle spread across the field
+    w1 = _tan_wcs((30.0, 40.0), (n / 2, n / 2), fov_deg / n)
+    w2 = _tan_wcs((30.004, 39.996), (n / 2, n / 2), fov_deg / n)
+    shape = (n, n)
     rng = np.random.default_rng(1)
     yy, xx = np.indices(shape)
     sb = 2.0 + 0.1 * rng.standard_normal(shape)
-    sb += 2.0 * np.exp(-(((yy - 30) ** 2 + (xx - 30) ** 2) / 30.0))
+    sb += 2.0 * np.exp(-(((yy - n / 2) ** 2 + (xx - n / 2) ** 2) / 200.0))
 
     omega_in = solid_angle_map(w1, shape)
     omega_out = solid_angle_map(w2, shape)
+    spread = (omega_in.max() - omega_in.min()) / omega_in.mean()
+    assert spread > 0.01, f"test field too small: omega spread only {spread:.4f}"
 
     path_a, _ = to_common_grid(sb, w1, w2, shape)
 
@@ -150,8 +156,26 @@ def test_d03_surface_brightness_vs_flux_per_pixel() -> None:
     path_b = flux_out / omega_out
 
     mask = np.isfinite(path_a) & np.isfinite(path_b) & (omega_out > 0)
-    mask[:3, :] = mask[-3:, :] = mask[:, :3] = mask[:, -3:] = False
+    mask[:5, :] = mask[-5:, :] = mask[:, :5] = mask[:, -5:] = False
     rel = np.abs(path_a[mask] - path_b[mask]) / np.abs(path_b[mask])
-    # bilinear interpolation smooths the peak slightly; tolerance covers that
-    assert np.median(rel) < 0.02
-    assert np.percentile(rel, 95) < 0.10
+    # Agreement must be well below the solid-angle spread to be meaningful.
+    assert np.median(rel) < 0.001
+    assert np.percentile(rel, 95) < 0.005
+
+
+def test_bilinear_peak_smoothing_is_measured() -> None:
+    """Bilinear interpolation smooths point sources — measured, not assumed.
+
+    A sigma=1 px Gaussian loses ~17% of its peak after a fractional-pixel
+    resample, and white noise is correlated/suppressed (std ~0.64x). This is
+    the documented cost of surface-brightness interpolation; flux-conserving
+    resampling of variance and mask dilation are pipeline concerns (roadmap
+    CORE.04a, PL.01).
+    """
+    w1 = _tan_wcs((10.0, 20.0), (20.5, 20.5), 0.0017)
+    w2 = _tan_wcs((10.0022, 19.9987), (20.5, 20.5), 0.0017)
+    yy, xx = np.indices((40, 40))
+    src = 5.0 * np.exp(-((yy - 20) ** 2 + (xx - 20) ** 2) / 2.0)
+    out, _ = to_common_grid(src, w1, w2, (40, 40))
+    ratio = float(np.nanmax(out) / src.max())
+    assert 0.75 < ratio < 0.95  # measured 0.83: smoothing is real but bounded

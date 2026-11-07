@@ -41,8 +41,15 @@ def to_common_grid(
     and propagates through the interpolation. Returns the resampled array
     (float64, NaN where uncovered) and ``footprint``, the boolean coverage
     mask reproject reports. Mask dilation for conservative footprints is the
-    caller's job (DS spec §7). An all-NaN result raises
-    ``EmptyResultError`` (SDD §6.1).
+    caller's job (DS spec §7, roadmap PL.01).
+
+    Known cost of bilinear interpolation (measured in
+    ``tests/core/test_align.py::test_bilinear_peak_smoothing_is_measured``):
+    a sigma=1 px point source loses ~17% of peak flux and noise is
+    correlated/suppressed (~0.64x std). ``to_common_grid`` resamples the
+    image only — variance arrays need their own path because resampling
+    variance is not the same operation (roadmap CORE.04a). An all-NaN
+    result raises ``EmptyResultError`` (SDD §6.1).
     """
     arr = np.asarray(data)
     if arr.ndim != 2 or arr.dtype.kind not in "fiu":

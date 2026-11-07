@@ -36,7 +36,7 @@ Sections 1–5 explain constraints, shape and tooling. Sections 6–9 are the de
 | Version | Change |
 |---|---|
 | 1.0 | First full draft. |
-| 1.2 | D-03 closed: imaging stays in MJy/sr through alignment and stacking; solid-angle conversion only in spectrum extraction and injection (measured agreement <2% in tests/core/test_align.py). |
+| 1.2 | D-03 closed: imaging stays in MJy/sr through alignment and stacking; solid-angle conversion only in spectrum extraction and injection (measured agreement ~0.01% on a >1%-spread field in tests/core/test_align.py). |
 | 1.1 | Incorporates the ML team's pipeline/feature brief: generic job runner (§6.8), `research` module (§6.9), `assistant` module (§6.10), new core submodules (shiftstack, candidates, inject, rank, classify), new tables (§7.4), Research Lab and assistant endpoints (§8.2b, §8.5–8.6), status vocabulary aligned to `queued/running/completed/failed/cancelled`, optional-feature degradation (§11.4), LLM secret (§10.3), `ml` dependency group and ONNX runtime inference, overlay kind `candidates` renamed `hypothesis`, new open items D-13 to D-22. |
 
 ---
@@ -1174,7 +1174,7 @@ PRD requirement IDs are not repeated here to avoid drift; this table maps capabi
 |---|---|---|---|
 | D-01 | Confirm TAP column names, release/deep filtering, and semantics of `time_bounds_lower` against live IRSA. | Lead | G1 |
 | D-02 | Measure IRSA safe concurrency (start 4) and cutout failure modes. | Lead | G1 |
-| D-03 | **Resolved (v1.2):** keep imaging in MJy/sr through alignment and stacking; apply the solid-angle map only for spectra and injection. Rationale: MJy/sr is surface brightness, so averaging/interpolation/shifting stay valid without pixel-area scaling; per-pixel area varies across the detector, so pre-converting to flux per pixel would mix that variation into resampled pixels. Measured: MJy/sr resampling vs flux-per-pixel resampling agree within 2% median on a synthetic field with varying pixel area (`tests/core/test_align.py::test_d03_surface_brightness_vs_flux_per_pixel`). DS spec §5/§7 annotated. ML engineer may object until Sun 8 Nov; silence = acceptance. | ML eng | closed |
+| D-03 | **Resolved (v1.2):** keep imaging in MJy/sr through alignment and stacking; apply the solid-angle map only for spectra and injection. Rationale: MJy/sr is surface brightness, so averaging/interpolation/shifting stay valid without pixel-area scaling; per-pixel area varies across the detector, so pre-converting to flux per pixel would mix that variation into resampled pixels. Measured: on a 10° synthetic field with asserted >1% solid-angle spread, MJy/sr resampling vs flux-per-pixel resampling agree to ~0.01% (`tests/core/test_align.py::test_d03_surface_brightness_vs_flux_per_pixel`). DS spec §5/§7 annotated. ML engineer may object until Sun 8 Nov; silence = acceptance. | ML eng | closed |
 | D-04 | Ephemeris/overlay source for known objects and Planet X candidates; refresh policy. | Backend 2 | G1 |
 | D-05 | Name resolver provider for `/resolve` (or local list only). | Backend 2 | G2 |
 | D-06 | Frontend image contract: PNG+JSON (default) vs raw array. | Frontend | G1 |
