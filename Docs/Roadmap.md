@@ -194,10 +194,14 @@ no settings, no web. Tests use tiny synthetic arrays.
   Base landed on `feature/core-07-coreerror` (`CoreError`, `InvalidInputError`,
   `EmptyResultError`, `check_not_all_nan`). Remaining: retrofit `shiftstack`
   errors on PR #4 to derive from `CoreError` (RS.01 item 7).
-- **CORE.02** `[ ]` WCS wavelength map (FR-CORE-02).
-  Own bilinear interpolation of the WCS-WAVE lookup; `wavelength_map` and
-  `wavelength_at` in µm. Do not use astropy for the spectral axis.
-  Acceptance: synthetic lookup table recovered to tolerance; out-of-range pixel is NaN.
+- **CORE.02** `[x]` WCS wavelength map (FR-CORE-02). Branch `feature/core-02-wcs`.
+  Own bilinear interpolation of the WCS-WAVE lookup; `WaveTab`,
+  `wavelength_map`/`wavelength_at`/`bandwidth_*` in µm. Astropy not used for
+  the spectral axis. Verified against a real QR2 IRSA cutout (max error
+  0.21 nm vs astropy WAVE-TAB). Note: Tests.md CORE-WCS-02 says `CoreError`
+  for out-of-table pixels while this task's acceptance says NaN — implemented
+  both: `wavelength_at` raises `InvalidInputError`, `wavelength_map` returns
+  NaN outside the grid.
 - **CORE.03** `[ ]` Calibration (FR-CORE-03).
   `to_surface_brightness`, `solid_angle_map`, `subtract_zodi`. Imaging stays in
   MJy/sr. Close D-03 with the ML engineer first (write the decision down).
