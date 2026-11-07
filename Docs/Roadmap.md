@@ -187,11 +187,13 @@ Gate dates are **proposed** and need the lead's confirmation.
 Read SDD §6.1 and Appendix D-03. Core code is pure NumPy/SciPy/astropy: no I/O,
 no settings, no web. Tests use tiny synthetic arrays.
 
-- **CORE.07** `[ ]` `CoreError` hierarchy (FR-CORE-07).
+- **CORE.07** `[~]` `CoreError` hierarchy (FR-CORE-07).
   One base class in `orbitalis_core`, subclasses per failure, codes mapped to
   `ORB-CORE-001/002` at the API boundary. All-NaN output raises. Do this first:
   PR #4 and every later core module depend on it.
-  Acceptance: `shiftstack` errors derive from it; test per error.
+  Base landed on `feature/core-07-coreerror` (`CoreError`, `InvalidInputError`,
+  `EmptyResultError`, `check_not_all_nan`). Remaining: retrofit `shiftstack`
+  errors on PR #4 to derive from `CoreError` (RS.01 item 7).
 - **CORE.02** `[ ]` WCS wavelength map (FR-CORE-02).
   Own bilinear interpolation of the WCS-WAVE lookup; `wavelength_map` and
   `wavelength_at` in µm. Do not use astropy for the spectral axis.

@@ -10,7 +10,7 @@ FR-CORE-03,FR,Calibration: imaging stays MJy/sr; solid angle only for spectra; z
 FR-CORE-04,FR,Flux-conserving reprojection to a common grid with footprint,6.1,core.align,G1,Backend 2 + ML,Scaffolded,CORE-*,
 FR-CORE-05,FR,Sigma-clipped stack and difference imaging with mask and variance propagation,6.1,core.stack,G1,Backend 2 + ML,Scaffolded,CORE-*,
 FR-CORE-06,FR,Stretch parameters fixed after the first N frames,6.1,core.stretch,G1,Backend 2 + ML,Scaffolded,CORE-*,Must-not-regress #5
-FR-CORE-07,FR,Typed CoreError hierarchy; all-NaN output is an error (ORB-CORE-001/002),6.1;11,errors + core,G1,Lead,Not started,CORE-*,PR #4 errors derive from ValueError: needs shared base
+FR-CORE-07,FR,Typed CoreError hierarchy; all-NaN output is an error (ORB-CORE-001/002),6.1;11,errors + core,G1,Lead,Partial,CORE-*,CoreError/InvalidInputError/EmptyResultError/check_not_all_nan landed; shiftstack retrofit pending on PR #4
 FR-CORE-08,FR,Source spectrum extraction with solid angle and wavelength-sorted errors,6.1,core.spectrum,G3,ML,Not started,CORE-*,Only needed if spectral classification goes
 FR-RS-01,FR,Shift-and-stack over a motion grid on aligned NaN-masked frames,6.1,core.shiftstack,G1,ML,In review,tests/core/test_shiftstack.py (43 on PR #4),PR #4 5d8f608. Review findings open: per-pixel best map; static sources; coverage mask; NaN spreading; vectorise
 FR-RS-02,FR,Work budget enforced before compute (ORB-RS-003); budget set from a benchmark,9.6,core.shiftstack + research,G1,ML,Partial,CORE-* RS-*,Check exists in PR #4; 2e9 default unmeasured (probe: ~110-130 s on sandbox)
