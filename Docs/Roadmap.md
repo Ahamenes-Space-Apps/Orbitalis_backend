@@ -284,7 +284,7 @@ Read SDD §6.2–6.4, §7, §9. Network only inside `gateway`, mocked in tests.
   migrations via `importlib.resources`, `write_tx()` serialized single-writer path,
   `read()` helper. `migrations/0001_init.sql` implements all §7.4 tables.
   Acceptance: fresh DB builds; second run is a no-op.
-- **ST.02** `[ ]` Repositories (FR-DATA-03).
+- **ST.02** `[x]` Repositories (FR-DATA-03). Branch `feature/st-02-repositories`.
   Fields, frames, cutouts, jobs, candidates, experiments; `field_id` is a stable
   hash independent of key order (Must-not-regress #4); cache eviction.
 - **PL.01** `[ ]` Field builder (FR-DATA-04).
