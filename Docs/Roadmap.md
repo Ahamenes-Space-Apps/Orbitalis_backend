@@ -279,8 +279,10 @@ Read SDD §6.2–6.4, §7, §9. Network only inside `gateway`, mocked in tests.
   Acceptance: never exceeds concurrency; breaker opens and recovers; timeout maps to `ORB-GW-004`.
 - **GW.03** `[ ]` Cutout validation.
   Reject corrupt FITS (`ORB-CORE-001`); extract image, FLAGS, VARIANCE, WCS-WAVE.
-- **ST.01** `[ ]` SQLite setup and migrations (FR-DATA-03).
-  WAL, schema from SDD §7.4, migration runner; the folder is empty today.
+- **ST.01** `[x]` SQLite setup and migrations (FR-DATA-03). Branch `feature/st-01-store-db`.
+  `store/db.py`: WAL + foreign_keys + busy_timeout pragmas, numbered forward-only
+  migrations via `importlib.resources`, `write_tx()` serialized single-writer path,
+  `read()` helper. `migrations/0001_init.sql` implements all §7.4 tables.
   Acceptance: fresh DB builds; second run is a no-op.
 - **ST.02** `[ ]` Repositories (FR-DATA-03).
   Fields, frames, cutouts, jobs, candidates, experiments; `field_id` is a stable
