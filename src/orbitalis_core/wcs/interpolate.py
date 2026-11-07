@@ -17,7 +17,7 @@ from typing import Any
 
 import numpy as np
 
-from orbitalis_core.errors import InvalidInputError
+from orbitalis_core.errors import InvalidInputError, check_not_all_nan
 
 from .tab import WaveTab
 
@@ -64,10 +64,17 @@ def _linear_params(src: Any) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.nda
 
 
 def _table_coords(src: Any, x: Any, y: Any) -> tuple[np.ndarray, np.ndarray]:
-    """Map 0-based pixel coords (x=col, y=row) to table pixel coords."""
+    """Map 0-based pixel coords (x=col, y=row) to table pixel coords.
+
+    Array indices are 0-based; the FITS linear transform needs 1-based
+    pixels, so ``x + 1``/``y + 1`` are used before applying CRPIX (the same
+    convention astropy's ``origin=0`` applies). Omitting the +1 shifts every
+    result by one pixel — about 0.2 nm on SPHEREx detectors, more on steep
+    wavelength gradients.
+    """
     crpix, crval, cdelt, pc = _linear_params(src)
-    px = np.asarray(x, dtype=np.float64)
-    py = np.asarray(y, dtype=np.float64)
+    px = np.asarray(x, dtype=np.float64) + 1.0
+    py = np.asarray(y, dtype=np.float64) + 1.0
     dx = px - crpix[0]
     dy = py - crpix[1]
     qx = crval[0] + pc[0, 0] * cdelt[0] * dx + pc[0, 1] * cdelt[1] * dy
@@ -102,6 +109,10 @@ def _interp2(tab: WaveTab, field: str, qx: Any, qy: Any) -> tuple[np.ndarray, np
 
 
 def _at(src: Any, tab: WaveTab, field: str, x: float, y: float) -> float:
+    if np.ndim(x) != 0 or np.ndim(y) != 0:
+        raise InvalidInputError(
+            "wavelength_at/bandwidth_at take scalar pixels; use *_map for arrays"
+        )
     qx, qy = _table_coords(src, x, y)
     vals, inside = _interp2(tab, field, qx, qy)
     if not bool(np.all(inside)):
@@ -117,7 +128,8 @@ def _map(src: Any, tab: WaveTab, field: str, shape: tuple[int, int]) -> np.ndarr
     px, py = np.meshgrid(cols, rows)  # px[x], py[y] -> index [row, col]
     qx, qy = _table_coords(src, px, py)
     vals, inside = _interp2(tab, field, qx, qy)
-    return np.where(inside, vals, np.nan)
+    # Partly-outside pixels stay NaN, but an all-NaN map is an error (SDD 6.1).
+    return check_not_all_nan(np.where(inside, vals, np.nan), name=field)
 
 
 def wavelength_at(header_or_wcs: Any, tab: WaveTab, x: float, y: float) -> float:

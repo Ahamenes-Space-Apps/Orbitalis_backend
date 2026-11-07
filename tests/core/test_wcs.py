@@ -14,10 +14,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from astropy.io import fits
 
-from orbitalis_core.errors import InvalidInputError
+from orbitalis_core.errors import EmptyResultError, InvalidInputError
 from orbitalis_core.wcs import WaveTab, bandwidth_at, wavelength_at, wavelength_map
+
+fits = pytest.importorskip("astropy.io.fits")
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "wcs_wave.npz"
 
@@ -57,8 +58,8 @@ def test_wavelength_at_control_points_exact() -> None:
     tab = _identity_tab()
     hdr = _header()
     for x_tab, y_tab in zip(tab.x, tab.y, strict=True):
-        for x_pix, y_pix in [(x_tab - 10, y_tab - 10)]:
-            # header maps pixel p -> table coord p + 10
+        for x_pix, y_pix in [(x_tab - 11, y_tab - 11)]:
+            # header maps pixel p -> table coord p + 11
             assert wavelength_at(hdr, tab, x_pix, y_pix) == pytest.approx(
                 10.0 * x_tab - 5.0 * y_tab
             )
@@ -69,9 +70,9 @@ def test_wavelength_at_bilinear_between_nodes() -> None:
     hdr = _header()
     # Table coord (15, 150) is inside cell [10,20]x[100,200].
     # Plane value = 10*15 - 5*150 = -600; bilinear reproduces planes exactly.
-    assert wavelength_at(hdr, tab, 5.0, 140.0) == pytest.approx(-600.0)
+    assert wavelength_at(hdr, tab, 4.0, 139.0) == pytest.approx(-600.0)
     # Off-midpoint check: coord (17, 130) -> 170 - 650 = -480
-    assert wavelength_at(hdr, tab, 7.0, 120.0) == pytest.approx(-480.0)
+    assert wavelength_at(hdr, tab, 6.0, 119.0) == pytest.approx(-480.0)
 
 
 def test_wavelength_at_hand_computed_cell() -> None:
@@ -85,7 +86,7 @@ def test_wavelength_at_hand_computed_cell() -> None:
         ]
     )
     tab = WaveTab.from_columns(x, y, values)
-    hdr = _header(CRPIX1W=0.0, CRPIX2W=0.0)  # pixel == table coord
+    hdr = _header(CRPIX1W=1.0, CRPIX2W=1.0)  # pixel == table coord
     # At (0.5, 0.5): mean of corners = (0+10+20+40)/4 = 17.5
     assert wavelength_at(hdr, tab, 0.5, 0.5) == pytest.approx(17.5)
     # At (0.25, 0.5): tx=0.25, ty=0.5 -> 0.375*0 + 0.625*10 + 0.375*20 + 0.625*40... compute:
@@ -114,12 +115,12 @@ def test_fixture_matches_astropy_reference() -> None:
         abs(wavelength_at(hdr, tab, px, py) - wl)
         for px, py, wl in zip(fx["ref_px"], fx["ref_py"], fx["ref_wl_um"], strict=True)
     ]
-    assert max(errs) < 0.001  # 1 nm = 0.001 um
+    assert max(errs) < 1e-6  # ~1e-3 nm; catches a one-pixel shift (~2e-4 um)
     berrs = [
         abs(bandwidth_at(hdr, tab, px, py) - bw)
         for px, py, bw in zip(fx["ref_px"], fx["ref_py"], fx["ref_bw_um"], strict=True)
     ]
-    assert max(berrs) < 0.001
+    assert max(berrs) < 1e-6
 
 
 def test_wcs_object_path() -> None:
@@ -143,7 +144,7 @@ def test_wcs_object_path() -> None:
     px, py = float(fx["ref_px"][0]), float(fx["ref_py"][0])
     assert wavelength_at(FakeWcs(), tab, px, py) == pytest.approx(wavelength_at(hdr, tab, px, py))
     assert wavelength_at(FakeWcs(), tab, px, py) == pytest.approx(
-        float(fx["ref_wl_um"][0]), abs=0.001
+        float(fx["ref_wl_um"][0]), abs=1e-6
     )
 
 
@@ -163,7 +164,7 @@ def test_wavelength_map_nan_outside_table() -> None:
     xx, yy = np.meshgrid(x, y)
     values = np.stack([xx + yy, np.full_like(xx, 1.0)], axis=-1)
     tab = WaveTab.from_columns(x, y, values)
-    hdr = _header(CRPIX1W=0.0, CRPIX2W=0.0, CRVAL1W=0.0, CRVAL2W=0.0)
+    hdr = _header(CRPIX1W=1.0, CRPIX2W=1.0, CRVAL1W=0.0, CRVAL2W=0.0)
     # pixel == table coord; shape (15,15): pixels 0..9 are below x/y min 10.
     out = wavelength_map(hdr, tab, (15, 15))
     assert out.shape == (15, 15)
@@ -231,6 +232,21 @@ def test_from_hdu_rejects_wrong_hdu() -> None:
     hdu = fits.ImageHDU(data=np.zeros((2, 2)))
     with pytest.raises(InvalidInputError):
         WaveTab.from_hdu(hdu)
+
+
+def test_wavelength_map_all_outside_raises_empty_result() -> None:
+    tab = _identity_tab()
+    hdr = _header()
+    # shape covers pixels whose table coords are all below x=10 / y=100.
+    with pytest.raises(EmptyResultError):
+        wavelength_map(hdr, tab, (2, 2))
+
+
+def test_wavelength_at_rejects_non_scalar_pixels() -> None:
+    tab = _identity_tab()
+    hdr = _header()
+    with pytest.raises(InvalidInputError):
+        wavelength_at(hdr, tab, np.array([5.0]), 140.0)  # type: ignore[arg-type]
 
 
 def test_non_wcs_tab_rejected() -> None:
